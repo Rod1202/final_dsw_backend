@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Docentes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            display: none; /* Oculta todas las cards por defecto */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-center">Gestión de Docentes</h2>
+
+    <div class="form-group">
+        <label for="opcion">Selecciona una opción:</label>
+        <select id="opcion" class="form-control" onchange="mostrarCard()">
+            <option value="">Seleccione</option>
+            <option value="registrar">Registrar Docente</option>
+            <option value="actualizar">Actualizar Docente</option>
+            <option value="listar">Listar Docentes</option>
+            <option value="eliminar">Eliminar Docente</option>
+            <option value="consultar">Consultar por Rango de Sueldo</option>
+        </select>
+    </div>
+
+    <div class="card mb-4" id="cardRegistrar">
+        <div class="card-header">
+            <h5>Registrar Docente</h5>
+        </div>
+        <div class="card-body">
+            <form id="formRegistrar">
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="sueldo">Sueldo:</label>
+                    <input type="number" id="sueldo" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4" id="cardActualizar">
+        <div class="card-header">
+            <h5>Actualizar Docente</h5>
+        </div>
+        <div class="card-body">
+            <form id="formActualizar">
+                <div class="form-group">
+                    <label for="idActualizar">ID:</label>
+                    <div class="input-group">
+                        <input type="number" id="idActualizar" class="form-control" required>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary" onclick="buscarDocente()">Buscar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="nombreActualizar">Nombre:</label>
+                    <input type="text" id="nombreActualizar" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellidoActualizar">Apellido:</label>
+                    <input type="text" id="apellidoActualizar" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="sueldoActualizar">Sueldo:</label>
+                    <input type="number" id="sueldoActualizar" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4" id="cardListar">
+        <div class="card-header">
+            <h5>Listar Docentes</h5>
+        </div>
+        <div class="card-body">
+            <button type="button" class="btn btn-primary" onclick="listarDocentes()">Listar Docentes</button>
+            <table class="table mt-3" id="tablaDocentes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Sueldo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aquí se llenará con los datos de los docentes -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4" id="cardEliminar">
+        <div class="card-header">
+            <h5>Eliminar Docente</h5>
+        </div>
+        <div class="card-body">
+            <form id="formEliminar">
+                <div class="form-group">
+                    <label for="idEliminar">ID:</label>
+                    <input type="number" id="idEliminar" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4" id="cardConsultar">
+        <div class="card-header">
+            <h5>Consultar por Rango de Sueldo</h5>
+        </div>
+        <div class="card-body">
+            <form id="formConsultar">
+                <div class="form-group">
+                    <label for="sueldoMin">Sueldo Mínimo:</label>
+                    <input type="number" id="sueldoMin" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="sueldoMax">Sueldo Máximo:</label>
+                    <input type="number" id="sueldoMax" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Consultar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="resultado" class="mt-4"></div>
+
+</div>
+
+<script>
+    function mostrarCard() {
+        const opcion = document.getElementById('opcion').value;
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach(card => {
+            card.style.display = 'none'; // Ocultar todas las cards
+        });
+
+        // Limpiar el área de resultados
+        document.getElementById('resultado').innerText = '';
+
+        if (opcion) {
+            document.getElementById('card' + opcion.charAt(0).toUpperCase() + opcion.slice(1)).style.display = 'block'; // Mostrar la card seleccionada
+        }
+    }
+
+    async function registrarDocente(event) {
+        event.preventDefault();
+        const nombre = document.getElementById('nombre').value;
+        const apellido = document.getElementById('apellido').value;
+        const sueldo = document.getElementById('sueldo').value;
+
+        const response = await fetch('/api/docentes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombre, apellido, sueldo })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            mostrarResultado('Docente registrado: ' + JSON.stringify(result));
+        } else {
+            mostrarResultado('Error al registrar docente');
+        }
+    }
+
+    async function buscarDocente() {
+        const id = document.getElementById('idActualizar').value;
+
+        const response = await fetch('/api/docentes/' + id);
+        if (response.ok) {
+            const docente = await response.json();
+            document.getElementById('nombreActualizar').value = docente.nombre;
+            document.getElementById('apellidoActualizar').value = docente.apellido;
+            document.getElementById('sueldoActualizar').value = docente.sueldo;
+        } else {
+            mostrarResultado('Docente no encontrado');
+        }
+    }
+
+    async function actualizarDocente(event) {
+        event.preventDefault();
+        const id = document.getElementById('idActualizar').value;
+        const nombre = document.getElementById('nombreActualizar').value;
+        const apellido = document.getElementById('apellidoActualizar').value;
+        const sueldo = document.getElementById('sueldoActualizar').value;
+
+        const response = await fetch('/api/docentes/' + id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombre, apellido, sueldo })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            mostrarResultado('Docente actualizado: ' + JSON.stringify(result));
+        } else {
+            mostrarResultado('Error al actualizar docente');
+        }
+    }
+
+    async function eliminarDocente(event) {
+        event.preventDefault();
+        const id = document.getElementById('idEliminar').value;
+
+        const response = await fetch('/api/docentes/' + id, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            mostrarResultado('Docente eliminado');
+        } else {
+            mostrarResultado('Error al eliminar docente');
+        }
+    }
+
+    async function consultarPorRangoDeSueldo(event) {
+        event.preventDefault();
+        const min = document.getElementById('sueldoMin').value;
+        const max = document.getElementById('sueldoMax').value;
+
+        const response = await fetch('/api/docentes/sueldo?min=' + min + '&max=' + max);
+        if (response.ok) {
+            const docentes = await response.json();
+            mostrarTablaDocentes(docentes);
+        } else {
+            mostrarResultado('Error al consultar docentes');
+        }
+    }
+
+    async function listarDocentes() {
+        const response = await fetch('/api/docentes');
+        if (response.ok) {
+            const docentes = await response.json();
+            mostrarTablaDocentes(docentes);
+        } else {
+            mostrarResultado('Error al listar docentes');
+        }
+    }
+
+    function mostrarTablaDocentes(docentes) {
+        const tbody = document.getElementById('tablaDocentes').querySelector('tbody');
+        tbody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+
+        docentes.forEach(docente => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${docente.iddocente}</td>
+                <td>${docente.nombre}</td>
+                <td>${docente.apellido}</td>
+                <td>${docente.sueldo}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+
+
+    function mostrarResultado(mensaje) {
+        document.getElementById('resultado').innerText = mensaje;
+    }
+
+    document.getElementById('formRegistrar').addEventListener('submit', registrarDocente);
+    document.getElementById('formActualizar').addEventListener('submit', actualizarDocente);
+    document.getElementById('formEliminar').addEventListener('submit', eliminarDocente);
+    document.getElementById('formConsultar').addEventListener('submit', consultarPorRangoDeSueldo);
+</script>
+</body>
+</html>
